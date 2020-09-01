@@ -52,8 +52,9 @@ app.get(
 
 app.post(`/api/user`, async (req: Request, res: Response) => {
   try {
-    console.log(res)
-    const result = await User.findAll()
+    console.log(' ================== req.body = ', req.body)
+
+    const result = await User.add(req.body)
     console.log(result)
     res.status(200).send(result)
     console.log(res)
@@ -65,25 +66,44 @@ app.post(`/api/user`, async (req: Request, res: Response) => {
 app.put(
   '/api/user/:id',
   differenceInSeconds,
-  async (req: Request, res: Response) => {}
+  async (req: Request, res: Response) => {
+    try {
+      console.log(req.body)
+      const result = await User.update(req.body)
+    } catch (e) {}
+  }
 )
 
 app.post(
   '/api/user/login',
   differenceInSeconds,
-  async (req: Request, res: Response) => {}
+  async (req: Request, res: Response) => {
+    try {
+      console.log(' req  ', req)
+      // const { email, password } = req
+      // const loginRes = await User.login({ email, password })
+    } catch (e) {
+      console.error(e)
+    }
+  }
 )
 
 app.post(
   '/api/file',
   differenceInSeconds,
-  async (req: Request, res: Response) => {}
+  async (req: Request, res: Response) => {
+    try {
+    } catch (e) {}
+  }
 )
 
 app.get(
   '/api/file/:name',
   differenceInSeconds,
-  async (req: Request, res: Response) => {}
+  async (req: Request, res: Response) => {
+    try {
+    } catch (e) {}
+  }
 )
 
 app.listen(PORT, () => {

@@ -1,7 +1,8 @@
 import crypto from 'crypto'
+import jwt from 'jsonwebtoken'
 
 import { usersFile, UserContent } from './index'
-import { getFileContent, setFileContent } from './utils'
+import { getFileContent, setFileContent, emailPassword } from './utils'
 
 export class User {
   id: number
@@ -24,18 +25,14 @@ export class User {
     this.enabled = enabled
   }
 
-  static async add(
-    name: string,
-    email: string,
-    password: string,
-    enabled: boolean
-  ) {
+  static async add(user: User) {
+    const { name, email, password, enabled } = user
     const usersContent: UserContent = await getFileContent(usersFile)
 
-    console.log('add ', usersContent)
+    console.log('Add current users.json content', usersContent)
 
     const newCurrentId = usersContent.currentId + 1
-    const newUser = new User(newCurrentId, name, email, password, enabled)
+    const newUser = new User(newCurrentId, user.name, email, password, enabled)
     const newContent: UserContent = {
       users: [...usersContent.users, newUser],
       currentId: newCurrentId,
@@ -61,5 +58,20 @@ export class User {
 
   static async update(user: User) {
     const usersContent = await getFileContent(usersFile)
+  }
+
+  static async login(emailPassword: emailPassword) {
+    const { email, password } = emailPassword
+
+    const passwordHash = crypto.createHash('md5').update(password).digest('hex')
+    const usersContent: UserContent = await getFileContent(usersFile)
+    console.log('User.login   ====== ', usersContent)
+
+    const token: string = jwt.sign({ foo: 'bar' }, 'shhhhhh')
+    console.log('login token =================== ', token)
+    // const foundUser = usersContent.users.find(
+    //   (usr: { id: number }) => usr.id === id
+    // )
+    // return foundUser
   }
 }

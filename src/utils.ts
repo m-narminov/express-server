@@ -1,6 +1,11 @@
 import fs from 'fs'
 import { UserContent } from '.'
 
+export interface emailPassword {
+  email: string
+  password: string
+}
+
 export const returnResult = (
   err: NodeJS.ErrnoException | null,
   data: string
