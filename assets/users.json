@@ -4,8 +4,9 @@
       "id": 0,
       "name": "name",
       "email": "123@gmail.com",
-      "password": "123",
-      "enabled": true
+      "password": "202cb962ac59075b964b07152d234b70",
+      "enabled": true,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjEyM0BnbWFpbC5jb20iLCJwYXNzd29yZEhhc2giOiIyMDJjYjk2MmFjNTkwNzViOTY0YjA3MTUyZDIzNGI3MCIsImlhdCI6MTU5OTA0Njg4NCwiZXhwIjoxNTk5MDYxMjg0fQ.9GeiwwXF55i45YZNWuS2DfgTkd6J7yZIFQscIA8tFQg"
     }
   ],
   "currentId": 1

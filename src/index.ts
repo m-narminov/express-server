@@ -1,16 +1,12 @@
 import express, { Request, Response } from 'express'
 import fs from 'fs'
+import bodyParser from 'body-parser'
 
-import { differenceInSeconds } from './middlewares'
+import { UserContent, usersFile } from './utils'
+import { differenceInSeconds, checkAuth } from './middlewares'
 import { User } from './user'
 
-export interface UserContent {
-  users: User[]
-  currentId: number
-}
-
 export let currentId: number = 0
-export const usersFile: string = 'assets/users.json'
 const app: express.Application = express()
 const PORT: number = 3000
 
@@ -37,53 +33,63 @@ fs.readFile(usersFile, 'utf8', (err, data) => {
   }
 })
 
+app.use(bodyParser.json())
+
 app.get(
   `/api/user`,
   differenceInSeconds,
+  checkAuth,
   async (req: Request, res: Response) => {
     try {
       const result = await User.findAll()
-      console.log(result)
       res.status(200).send(result)
-    } catch (e) {}
-    // const res = await User.findOne()
+    } catch (e) {
+      res.status(500)
+    }
   }
 )
 
-app.post(`/api/user`, async (req: Request, res: Response) => {
-  try {
-    console.log(' ================== req.body = ', req.body)
-
-    const result = await User.add(req.body)
-    console.log(result)
-    res.status(200).send(result)
-    console.log(res)
-  } catch (e) {
-    console.error(e)
+app.post(
+  `/api/user`,
+  differenceInSeconds,
+  checkAuth,
+  async (req: Request, res: Response) => {
+    try {
+      const result = await User.add(req.body)
+      res.status(200).send(result)
+    } catch (e) {
+      console.error(e)
+      res.status(500)
+    }
   }
-})
+)
 
 app.put(
   '/api/user/:id',
   differenceInSeconds,
+  checkAuth,
   async (req: Request, res: Response) => {
     try {
-      console.log(req.body)
-      const result = await User.update(req.body)
-    } catch (e) {}
+      await User.update(req.body)
+      res.status(200)
+    } catch (e) {
+      res.status(500)
+    }
   }
 )
 
 app.post(
   '/api/user/login',
   differenceInSeconds,
+  checkAuth,
   async (req: Request, res: Response) => {
     try {
-      console.log(' req  ', req)
-      // const { email, password } = req
-      // const loginRes = await User.login({ email, password })
+      const { email, password } = req.body
+      const loginRes = await User.login({ email, password })
+      res.status(200).send(loginRes)
     } catch (e) {
       console.error(e)
+      res.status(401)
     }
   }
 )
@@ -91,18 +97,26 @@ app.post(
 app.post(
   '/api/file',
   differenceInSeconds,
+  checkAuth,
   async (req: Request, res: Response) => {
     try {
-    } catch (e) {}
+      res.status(200)
+    } catch (e) {
+      res.status(500)
+    }
   }
 )
 
 app.get(
   '/api/file/:name',
   differenceInSeconds,
+  checkAuth,
   async (req: Request, res: Response) => {
     try {
-    } catch (e) {}
+      res.status(200)
+    } catch (e) {
+      res.status(500)
+    }
   }
 )
 

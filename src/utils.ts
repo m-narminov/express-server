@@ -1,6 +1,19 @@
 import fs from 'fs'
-import { UserContent } from '.'
+import { User } from './user'
 
+export const usersFile: string = 'assets/users.json'
+export interface UserForFindOne {
+  id?: number
+  name?: string
+  email?: string
+  password?: string
+  token?: string
+  enabled?: boolean
+}
+export interface UserContent {
+  users: User[]
+  currentId: number
+}
 export interface emailPassword {
   email: string
   password: string
@@ -15,16 +28,15 @@ export const returnResult = (
 }
 
 export const getFileContent = async (fileName: string) => {
-  const sss = await fs.promises.readFile(fileName, { encoding: 'utf8' })
-  console.log(' promises read file ', sss)
-  let result: UserContent = JSON.parse(
-    await fs.promises.readFile(fileName, { encoding: 'utf8' })
-  )
+  const usersContent = await fs.promises.readFile(fileName, {
+    encoding: 'utf8',
+  })
+  let result: UserContent = JSON.parse(usersContent)
   return result
 }
 
 export const setFileContent = (fileName: string, content: UserContent) => {
-  fs.writeFile(fileName, JSON.stringify(content), err => {
+  fs.writeFile(fileName, JSON.stringify(content, null, 2), err => {
     if (err) throw err
   })
 }
