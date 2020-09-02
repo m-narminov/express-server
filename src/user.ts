@@ -1,13 +1,15 @@
-import crypto from 'crypto'
-import jwt from 'jsonwebtoken'
+import httpContext from 'express-http-context'
 
 import {
   getFileContent,
   setFileContent,
   emailPassword,
   UserContent,
-  UserForFindOne,
   usersFile,
+  createPassword,
+  createToken,
+  validateUser,
+  isSameUser,
 } from './utils'
 
 export class User {
@@ -23,24 +25,26 @@ export class User {
     name: string,
     email: string,
     password: string,
-    enabled: boolean
+    enabled: boolean = true
   ) {
     this.id = id
     this.name = name
     this.email = email
-    this.password = crypto.createHash('md5').update(password).digest('hex')
+    this.password = createPassword(password)
     this.enabled = enabled
-    this.token = ''
+    this.token = createToken(id.toString(), this.password, { expiresIn: '4d' })
   }
 
   static async add(user: User) {
     const { name, email, password, enabled } = user
+    validateUser(user)
+
     const usersContent: UserContent = await getFileContent(usersFile)
-
-    console.log('Add current users.json content', usersContent)
-
     const newCurrentId = usersContent.currentId + 1
     const newUser = new User(newCurrentId, name, email, password, enabled)
+    const currentUser = httpContext.get('user')
+    if (isSameUser(newUser, currentUser)) throw new Error('User already exist')
+
     const newContent: UserContent = {
       users: [...usersContent.users, newUser],
       currentId: newCurrentId,
@@ -59,7 +63,7 @@ export class User {
   static async findByToken(userToken: string) {
     const usersContent: UserContent = await getFileContent(usersFile)
     const users = usersContent.users
-    const foundUser = users.find(({ token }: User) => token === userToken)
+    const foundUser = users.find((user: User) => user.token === userToken)
     if (!foundUser) throw new Error('User not found')
     return foundUser
   }
@@ -71,6 +75,7 @@ export class User {
   }
 
   static async update(user: User) {
+    if (user.id === undefined) throw new Error('User has no id')
     const updatedUser = user
     const usersContent = await getFileContent(usersFile)
     const currentUsers = usersContent.users
@@ -86,7 +91,7 @@ export class User {
   static async login(emailPassword: emailPassword) {
     const { email, password } = emailPassword
 
-    const passwordHash = crypto.createHash('md5').update(password).digest('hex')
+    const passwordHash = createPassword(password)
     const usersContent: UserContent = await getFileContent(usersFile)
 
     const foundUser = usersContent.users.find(
@@ -95,7 +100,7 @@ export class User {
     )
     if (!foundUser) throw new Error('User not found')
 
-    const token: string = jwt.sign({ email, passwordHash }, passwordHash, {
+    const token: string = createToken(foundUser.id.toString(), passwordHash, {
       expiresIn: '4h',
     })
 

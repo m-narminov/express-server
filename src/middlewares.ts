@@ -1,11 +1,19 @@
 import { Response, Request, NextFunction } from 'express'
+import httpContext from 'express-http-context'
 
 import { User } from './user'
 
-export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
+export const checkAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const token = req.headers.authorization
-    if (token) User.findByToken(token)
+    if (token) {
+      const currentUser = await User.findByToken(token)
+      httpContext.set('user', currentUser)
+    }
     next()
   } catch (e) {
     res.status(403)

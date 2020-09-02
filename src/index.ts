@@ -1,6 +1,7 @@
-import express, { Request, Response } from 'express'
 import fs from 'fs'
+import express, { Request, Response } from 'express'
 import bodyParser from 'body-parser'
+import httpContext from 'express-http-context'
 
 import { UserContent, usersFile } from './utils'
 import { differenceInSeconds, checkAuth } from './middlewares'
@@ -34,6 +35,7 @@ fs.readFile(usersFile, 'utf8', (err, data) => {
 })
 
 app.use(bodyParser.json())
+app.use(httpContext.middleware)
 
 app.get(
   `/api/user`,
@@ -55,7 +57,8 @@ app.post(
   checkAuth,
   async (req: Request, res: Response) => {
     try {
-      const result = await User.add(req.body)
+      const newUser: User = req.body
+      const result = await User.add(newUser)
       res.status(200).send(result)
     } catch (e) {
       console.error(e)
