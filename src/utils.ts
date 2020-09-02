@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { User } from './user'
 
 export const usersFile: string = 'assets/users.json'
+export const filesPath: string = 'uploads/'
 
 export interface UserContent {
   users: User[]

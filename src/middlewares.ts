@@ -9,15 +9,21 @@ export const checkAuth = async (
   next: NextFunction
 ) => {
   try {
+    console.log(' http context ', httpContext.get('user'))
     const token = req.headers.authorization
     if (token) {
       const currentUser = await User.findByToken(token)
+      if (!currentUser) {
+        console.log('not auth ', currentUser, ' token = ', token)
+        throw new Error('Not authorized')
+      }
+      console.log('currentUser = ', currentUser, 'token = ', token)
       httpContext.set('user', currentUser)
+      next()
     }
-    next()
+    throw new Error('Not authorized')
   } catch (e) {
-    res.status(403)
-    res.end()
+    res.status(403).send('Not authorized').end()
   }
 }
 
@@ -28,11 +34,10 @@ export const differenceInSeconds = (
 ) => {
   try {
     const startTime: number = new Date().getTime()
-    console.log('startTime: ', startTime)
     res.on('finish', () => {
       const endTime: number = new Date().getTime()
       const diff: number = (endTime - startTime) / 1000
-      console.log('request seconds: ', diff)
+      console.log('request duration: ', diff + 's')
     })
 
     next()
