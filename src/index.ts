@@ -1,9 +1,9 @@
 import fs from 'fs'
 import express, { Request, Response } from 'express'
-import bodyParser from 'body-parser'
+import bodyParser, { text } from 'body-parser'
 import httpContext from 'express-http-context'
 
-import { UserContent, usersFile } from './utils'
+import { UserContent, usersFile, filesPath } from './utils'
 import { differenceInSeconds, checkAuth } from './middlewares'
 import { User } from './user'
 
@@ -19,7 +19,6 @@ fs.readFile(usersFile, 'utf8', (err, data) => {
   const usersContent: UserContent = JSON.parse(data.toString())
   if (usersContent.hasOwnProperty('currentId')) {
     currentId = usersContent.currentId
-    console.log(usersContent)
   } else {
     const newUsersContent = JSON.stringify({
       users: usersContent.users,
@@ -103,6 +102,11 @@ app.post(
   checkAuth,
   async (req: Request, res: Response) => {
     try {
+      const { fileName }: { fileName: string } = req.body
+      // fs.createWriteStream(filesPath + fileName, { encoding: 'utf-8' }).pipe()
+      // fs.createWriteStream(filesPath + 'text.txt', {
+      //   encoding: 'utf-8',
+      // }).pipe()
       res.status(200)
     } catch (e) {
       res.status(500)
