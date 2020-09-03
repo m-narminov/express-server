@@ -2,6 +2,7 @@ import fs from 'fs'
 import express, { Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import httpContext from 'express-http-context'
+import formidable from 'formidable'
 
 import { UserContent, usersFile, filesPath } from './utils'
 import { differenceInSeconds, checkAuth } from './middlewares'
@@ -34,7 +35,6 @@ fs.readFile(usersFile, 'utf8', (err, data) => {
 })
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
 app.use(httpContext.middleware)
 
 app.get(
@@ -102,17 +102,33 @@ app.post(
   checkAuth,
   async (req: Request, res: Response) => {
     try {
-      console.log('post /api/file = ', req)
-      let { fileName }: { fileName: string } = req.body
-      if (!fileName || fileName.trim() === '') {
-        fileName = `${new Date()}`
-      }
-      const writeStream = fs.createWriteStream(`${filesPath}${fileName}`, {
-        encoding: 'utf-8',
-      })
-      req.pipe(writeStream)
-      req.on('end', () => {
-        res.status(200).send(`File ${fileName} uploaded`).end()
+      const form = new formidable.IncomingForm()
+
+      form.parse(req, (err, fields, files): void => {
+        if (err) {
+          console.error(err)
+          res.status(500).send(err).end()
+          return
+        }
+
+        let fileName = files.file.name
+        const uploadFilePath = files.file.path
+        const uploadFileName = files.file.name
+        const base64FileName = Buffer.from(uploadFileName, 'utf-8').toString(
+          'base64'
+        )
+        if (!fileName || fileName.trim() === '') {
+          fileName = `${new Date()}`
+        }
+        const rawData = fs.readFileSync(uploadFilePath)
+        fs.writeFile(`${filesPath}${base64FileName}`, rawData, err => {
+          if (err) {
+            res.status(500).send('upload error').end()
+            return
+          }
+
+          res.status(200).send(`File ${fileName} uploaded`).end()
+        })
       })
     } catch (e) {
       res.status(500).send(e).end()
@@ -131,13 +147,14 @@ app.get(
         res.status(404).end()
         return
       }
-
-      const fileStream = fs.createReadStream(filesPath + name, {
-        encoding: 'utf-8',
+      const base64FileName = Buffer.from(name, 'utf-8').toString('base64')
+      res.download(`${filesPath}${base64FileName}`, err => {
+        if (err) {
+          res.status(500).send('Err while download file').end()
+          return
+        }
       })
-
-      fileStream.pipe(res)
-      res.status(200)
+      // res.end()
     } catch (e) {
       res.status(500)
     }

@@ -11,7 +11,6 @@ export const checkAuth = async (
   next: NextFunction
 ) => {
   try {
-    console.log(' http context ', httpContext.get('user'))
     const token = req.headers.authorization
     if (token) {
       const currentUser = await User.findByToken(
@@ -33,7 +32,6 @@ export const checkAuth = async (
             res.status(403).send('Not authorized').end()
             return
           }
-          console.log('decoded token ', decoded)
         }
       )
       httpContext.set('user', currentUser)
