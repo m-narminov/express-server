@@ -1,6 +1,6 @@
 import fs from 'fs'
 import express, { Request, Response } from 'express'
-import bodyParser, { text } from 'body-parser'
+import bodyParser from 'body-parser'
 import httpContext from 'express-http-context'
 
 import { UserContent, usersFile, filesPath } from './utils'
@@ -34,6 +34,7 @@ fs.readFile(usersFile, 'utf8', (err, data) => {
 })
 
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(httpContext.middleware)
 
 app.get(
@@ -83,12 +84,11 @@ app.put(
 app.post(
   '/api/user/login',
   differenceInSeconds,
-  checkAuth,
   async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body
-      const loginRes = await User.login({ email, password })
-      res.status(200).send(loginRes)
+      const userToken = await User.login({ email, password })
+      res.status(200).send(userToken)
     } catch (e) {
       console.error(e)
       res.status(401)
@@ -102,14 +102,20 @@ app.post(
   checkAuth,
   async (req: Request, res: Response) => {
     try {
-      const { fileName }: { fileName: string } = req.body
-      // fs.createWriteStream(filesPath + fileName, { encoding: 'utf-8' }).pipe()
-      // fs.createWriteStream(filesPath + 'text.txt', {
-      //   encoding: 'utf-8',
-      // }).pipe()
-      res.status(200)
+      console.log('post /api/file = ', req)
+      let { fileName }: { fileName: string } = req.body
+      if (!fileName || fileName.trim() === '') {
+        fileName = `${new Date()}`
+      }
+      const writeStream = fs.createWriteStream(`${filesPath}${fileName}`, {
+        encoding: 'utf-8',
+      })
+      req.pipe(writeStream)
+      req.on('end', () => {
+        res.status(200).send(`File ${fileName} uploaded`).end()
+      })
     } catch (e) {
-      res.status(500)
+      res.status(500).send(e).end()
     }
   }
 )
@@ -120,6 +126,17 @@ app.get(
   checkAuth,
   async (req: Request, res: Response) => {
     try {
+      const { name } = req.params
+      if (name.trim() === '') {
+        res.status(404).end()
+        return
+      }
+
+      const fileStream = fs.createReadStream(filesPath + name, {
+        encoding: 'utf-8',
+      })
+
+      fileStream.pipe(res)
       res.status(200)
     } catch (e) {
       res.status(500)

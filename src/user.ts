@@ -10,6 +10,7 @@ import {
   createToken,
   validateUser,
   isSameUser,
+  expirationTime,
 } from './utils'
 
 export class User {
@@ -32,7 +33,9 @@ export class User {
     this.email = email
     this.password = createPassword(password)
     this.enabled = enabled
-    this.token = createToken(id.toString(), this.password, { expiresIn: '4d' })
+    this.token = createToken(id.toString(), this.password, {
+      expiresIn: expirationTime,
+    })
   }
 
   static async add(user: User) {
@@ -64,7 +67,6 @@ export class User {
     const usersContent: UserContent = await getFileContent(usersFile)
     const users = usersContent.users
     const foundUser = users.find((user: User) => user.token === userToken)
-    if (!foundUser) throw new Error('User not found')
     return foundUser
   }
 
@@ -100,8 +102,8 @@ export class User {
     )
     if (!foundUser) throw new Error('User not found')
 
-    const token: string = createToken(foundUser.id.toString(), passwordHash, {
-      expiresIn: '4h',
+    const token: string = createToken({ data: foundUser.id }, passwordHash, {
+      expiresIn: expirationTime,
     })
 
     await this.update({ ...foundUser, token })

@@ -6,6 +6,7 @@ import { User } from './user'
 
 export const usersFile: string = 'assets/users.json'
 export const filesPath: string = 'uploads/'
+export const expirationTime = '4h' // must be 4h
 
 export interface UserContent {
   users: User[]

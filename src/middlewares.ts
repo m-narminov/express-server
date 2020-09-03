@@ -1,7 +1,9 @@
 import { Response, Request, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
 import httpContext from 'express-http-context'
 
 import { User } from './user'
+import { expirationTime } from './utils'
 
 export const checkAuth = async (
   req: Request,
@@ -12,18 +14,36 @@ export const checkAuth = async (
     console.log(' http context ', httpContext.get('user'))
     const token = req.headers.authorization
     if (token) {
-      const currentUser = await User.findByToken(token)
+      const currentUser = await User.findByToken(
+        token.replace('Bearer', '').trim()
+      )
       if (!currentUser) {
-        console.log('not auth ', currentUser, ' token = ', token)
-        throw new Error('Not authorized')
+        throw new Error('User not found')
       }
-      console.log('currentUser = ', currentUser, 'token = ', token)
+
+      jwt.verify(
+        currentUser.token,
+        currentUser.password,
+        {
+          maxAge: expirationTime,
+        },
+        (err, decoded) => {
+          if (err) {
+            console.error(err)
+            res.status(403).send('Not authorized').end()
+            return
+          }
+          console.log('decoded token ', decoded)
+        }
+      )
       httpContext.set('user', currentUser)
       next()
+    } else {
+      throw new Error('Token not provided')
     }
-    throw new Error('Not authorized')
   } catch (e) {
-    res.status(403).send('Not authorized').end()
+    console.error(e)
+    res.status(500).send(e)
   }
 }
 

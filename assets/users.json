@@ -4,9 +4,10 @@
       "id": 0,
       "name": "name",
       "email": "123@gmail.com",
+      "//password": "is 123",
       "password": "202cb962ac59075b964b07152d234b70",
       "enabled": true,
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjEyM0BnbWFpbC5jb20iLCJwYXNzd29yZEhhc2giOiIyMDJjYjk2MmFjNTkwNzViOTY0YjA3MTUyZDIzNGI3MCIsImlhdCI6MTU5OTA1MDc1MSwiZXhwIjoxNTk5MDY1MTUxfQ.uWtS2X7GiJ7QYDAFRqnV5VF8KWYzYEu11QnjLblTrAs"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjowLCJpYXQiOjE1OTkxMjQ1OTYsImV4cCI6MTU5OTEzODk5Nn0.gYkKHJXWB6uTFbwAUExmtcSsBapuW-tdpcz4G0wr3IY"
     }
   ],
   "currentId": 15
